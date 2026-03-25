@@ -1,32 +1,23 @@
 version: 0.2
 
-env:
-  variables:
-    IMAGE_NAME: dugyalaravali28/vite-app
-
 phases:
   pre_build:
     commands:
       - echo "Logging in to Docker Hub..."
       - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-
+      - aws eks update-kubeconfig --region eu-west-1 --name brain-cluster
   build:
     commands:
       - echo "Building Docker image..."
-      - docker build -t $IMAGE_NAME .
-      - docker tag $IMAGE_NAME:latest $IMAGE_NAME:latest
-
+      - docker build -t dugyalaravali28/vite-app .
   post_build:
     commands:
-      - echo "Pushing image to Docker Hub..."
-      - docker push $IMAGE_NAME:latest
-
-      - echo "Updating kubeconfig..."
-      - aws eks update-kubeconfig --region eu-west-1 --name brain-cluster
-
-      - echo "Deploying to EKS..."
-      - kubectl apply -f deployment.yaml
-      - kubectl apply -f service.yaml
+      - echo "Pushing image..."
+      - docker push dugyalaravali28/vite-app:latest
+      - echo "Deploying directly from CodeBuild..."
+      # We do the deployment here instead of using a separate Pipeline stage
+      - kubectl apply -f deployment.yaml -n vite-app
+      - kubectl apply -f service.yaml -n vite-app
 
 artifacts:
   files:
