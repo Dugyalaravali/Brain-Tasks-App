@@ -1,0 +1,33 @@
+version: 0.2
+
+env:
+  variables:
+    IMAGE_NAME: dugyalaravali28/vite-app
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Docker Hub..."
+      - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+  build:
+    commands:
+      - echo "Building Docker image..."
+      - docker build -t $IMAGE_NAME .
+      - docker tag $IMAGE_NAME:latest $IMAGE_NAME:latest
+
+  post_build:
+    commands:
+      - echo "Pushing image to Docker Hub..."
+      - docker push $IMAGE_NAME:latest
+
+      - echo "Updating kubeconfig..."
+      - aws eks update-kubeconfig --region eu-west-1 --name brain-cluster
+
+      - echo "Deploying to EKS..."
+      - kubectl apply -f deployment.yaml
+      - kubectl apply -f service.yaml
+
+artifacts:
+  files:
+    - '**/*'
