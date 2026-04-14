@@ -5,7 +5,17 @@ phases:
     commands:
       - echo "Logging in to Docker Hub..."
       - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+      - echo "Set region"
+      - export AWS_DEFAULT_REGION=ap-south-1
+
+      - echo "Update kubeconfig"
       - aws eks update-kubeconfig --region ap-south-1 --name vite-cluster
+
+      - echo "Force authentication"
+      - aws eks get-token --cluster-name vite-cluster --region ap-south-1
+
+      - echo "Test access"
+      - kubectl get nodes
   build:
     commands:
       - echo "Building Docker image..."
