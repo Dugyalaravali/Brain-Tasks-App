@@ -7,6 +7,8 @@ phases:
       - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
       - echo "Set region"
       - export AWS_DEFAULT_REGION=ap-south-1
+      - echo "Check IAM role"
+      - aws sts get-caller-identity 
 
       - echo "Update kubeconfig"
       - aws eks update-kubeconfig --region ap-south-1 --name vite-cluster
